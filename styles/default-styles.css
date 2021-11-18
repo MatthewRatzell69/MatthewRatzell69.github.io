@@ -41,3 +41,7 @@ button[data-playing="no"]:after{
   font-size: 1.2rem;
   width: 8rem;
 }
+
+sw-nav{
+  padding-bottom:500px;
+}
