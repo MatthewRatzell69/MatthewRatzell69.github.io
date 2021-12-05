@@ -40,35 +40,31 @@ export default class Bullet {
         //before collision
         if (!this.hasCollided) {
 
-            //ctx.save();
             this.dx = (xTarget - 500) / 150;
-            this.dy = (yTarget - 25) / 150;
-            //in order to move we will update our x and our y value
-            this.x += this.dx;
-            this.y += this.dy;
-            //ctx.restore();
+            this.dy = (yTarget - 25) / 150 + this.gravityScale;       
+            //increment for largely here 
+            this.gravityScale += .01;
         }
         //after
         else {
             //reverse the ball when it hits initially
             if (this.isColliding) {
-                this.dx = -this.dx;
-                this.dy = -this.dy * 1.2;
-
+                this.dx = -this.dx + utils.getRandom(-3,3);
+                this.dy = -this.dy * 1.05;
+                //reset gravity scale 
+                this.gravityScale = .01;
             }
 
-            this.dx = this.dx;
+            this.dx = this.dx *.9995;
             //making sure it slows down after collision and that gravity is acting on it
             this.dy = (this.dy * .99) + this.gravityScale;
-            //setting values
-            this.x += this.dx;
-            this.y += this.dy;
             //making sure we increment gravity scale
             this.gravityScale += .0003;
             console.log(`X:${this.dx} Y:${this.dy}`);
         }
 
-
+        this.x += this.dx;
+        this.y += this.dy;
         //while the ball is moving if it goes off screen it resets 
         if (this.x >= 1000 || this.x < 0 || this.y >= 800 || this.y < 0) {
             this.resetBall();
@@ -93,7 +89,7 @@ export default class Bullet {
         main.decrementBalls();
         this.isAlive = false;
         this.x = 500;
-        this.y = 25;
+        this.y = 50;
         this.dx = 0;
         this.dy = 0;
         this.hasCollided = false;

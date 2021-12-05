@@ -25,9 +25,10 @@ function draw(params = {}) {
     // 2 - draw background
     ctx.save();
     ctx.fillStyle = "black";
-    ctx.globalAlpha = .1;
+    ctx.globalAlpha = .3;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.restore();
+    
 
     //draw the bullet
     
@@ -43,12 +44,17 @@ function draw(params = {}) {
     if(main.getBullet() != null){
         main.getBullet().drawBullet(ctx);
     }
+    utils.drawRectangle(ctx,0,canvasHeight-100,canvasWidth,100,"black");
+    //DRAW THE PLInko cups
+    ctx.save();
+    //75-225 //300-450 // 550-700 //775-925
+    utils.drawRectangle(ctx,75,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
+    utils.drawRectangle(ctx,50+canvasWidth/4,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
+    utils.drawRectangle(ctx,50+canvasWidth/2,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
+    utils.drawRectangle(ctx,canvasWidth-225,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
+    ctx.restore();
     
+}
 
-    
-}
-function drawBullet(){
-    bullet.moveBullet(ctx,);
-}
 
 export { setupCanvas, draw, getCtx };
