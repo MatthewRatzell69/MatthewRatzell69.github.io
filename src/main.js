@@ -1,7 +1,8 @@
 import * as utils from './utils.js';
 import * as canvas from './canvas.js';
-import Balls from './BallsClass.js';
 import Bullet from './BulletClass.js';
+import Balls from './BallsClass.js';
+
 
 
 // Gamestates that will be used for our game
@@ -22,6 +23,7 @@ let balls = [];
 let canvasElement = document.querySelector("canvas"); // hookup <canvas> element
 let gameState = GameState.MAIN;
 let numberOfBalls;
+let currentLevel = 0;
 function init() {
 
   numberOfBalls = 3;
@@ -30,7 +32,7 @@ function init() {
   //setting this to fault at the start so the bullet isnt moving arround
   decider = false;
   //adding a random ball somewhere
-  balls.push(new Balls(canvas.getCtx(), 1 / 2 * canvasElement.width, 450));
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +50,7 @@ function init() {
   canvasElement.addEventListener("mousedown", function (e) {
     bullet.setAlive();
     //we only want this code to run if our bullet is centered at the start
-    if(bullet.getX()==500&&bullet.getY()==25){
+    if (bullet.getX() == 500 && bullet.getY() == 25) {
       doMouseDown(getMousePosition(canvasElement, e));
     }
 
@@ -65,10 +67,30 @@ function loop(timestamp) {
   drawHUD();
 
   if (gameState == GameState.MAIN) {
+    //if there are no more balls we will load the next level
+    if (balls.length <= 0) {
+      //increment the level
+      incrementBalls();
+      bullet.resetBall();
+      currentLevel++
+      loadLevel(currentLevel);
+    }
     //move the bullet only if the bullet is suppose to be moving
     if (decider == true && bullet.getIsAlive()) {
 
+      //movement
       bullet.moveBullet(canvas.getCtx(), xAtClick, yAtClick);
+
+      //collision detection
+      for (let i = 0; i < balls.length; i++) {
+        //if it is colliding with one we exit the loop so that the collision detection doesnt only work with the last ball
+        if (bullet.checkColliding(getBall(i).getX(), getBall(i).getY(), getBall(i).getRadius())) {
+          //remove the ball it collided with
+          balls.splice(i, 1);
+          return;
+        }
+      }
+
     }
     //make sure draw is always being called at the end of our logic
     canvas.draw();
@@ -77,9 +99,27 @@ function loop(timestamp) {
 }
 
 //this is where ball creation will be handeled
-function loadLevel() {
+function loadLevel(levelNum) {
+  if(levelNum ==1)
+  {
+    balls.push(new Balls(canvas.getCtx(),50,400));
+    balls.push(new Balls(canvas.getCtx(),125,475));
+    balls.push(new Balls(canvas.getCtx(),200,550));
+    balls.push(new Balls(canvas.getCtx(),275,625));
+    balls.push(new Balls(canvas.getCtx(),350,650));
+    balls.push(new Balls(canvas.getCtx(),425,650));
+    balls.push(new Balls(canvas.getCtx(),500,650));
+    balls.push(new Balls(canvas.getCtx(),canvasElement.width-425,650));
+    balls.push(new Balls(canvas.getCtx(),canvasElement.width-350,650));
+    balls.push(new Balls(canvas.getCtx(),canvasElement.width-275,625));
+    balls.push(new Balls(canvas.getCtx(),canvasElement.width-200,550));
+    balls.push(new Balls(canvas.getCtx(),canvasElement.width-125,475));
+    balls.push(new Balls(canvas.getCtx(),canvasElement.width-50,400));
+  }
+
 
 }
+
 function drawHUD() {
   switch (gameState) {
     case GameState.START:
@@ -89,6 +129,7 @@ function drawHUD() {
       break;
     case GameState.MAIN:
       // draw score
+      fillText(canvas.getCtx(), `Current Level:${currentLevel}`, canvasElement.width - 1000, 25);
       fillText(canvas.getCtx(), `Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 285, 25);
       // strokeText(canvas.getCtx(),`Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 100, 25);
       break;

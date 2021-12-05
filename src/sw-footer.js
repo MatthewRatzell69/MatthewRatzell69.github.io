@@ -16,7 +16,7 @@ footer{
 <footer>
   <div class="content has-text-centered">
     <p>
-      <strong>Free Game Finder App</strong> by <a href="https://matthewratzell.com">Matthew Ratzell</a>. 
+      <strong>HorsePlinko</strong> by <a href="https://matthewratzell.com">Matthew Ratzell</a>. 
     </p>
   </div>
 </footer>
