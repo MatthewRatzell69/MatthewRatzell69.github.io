@@ -3,7 +3,7 @@ template.innerHTML = `
 
 <style>
 footer{
-  background-color: #41B3A3;
+  background-color: #e5c687;
 
 }
 </style>

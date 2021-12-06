@@ -24,7 +24,9 @@ let canvasElement = document.querySelector("canvas"); // hookup <canvas> element
 let gameState = GameState.MAIN;
 let numberOfBalls;
 let currentLevel = 0;
-let startX = 1 / 2 * canvasElement.width;
+let startX = 500;
+
+
 let startY = 50;
 function init() {
 

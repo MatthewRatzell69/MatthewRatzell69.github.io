@@ -8,7 +8,7 @@ template.innerHTML = `
 
 }
 nav{
-  background-color:#C38D9E !important;
+  background-color:#463f1a !important;
   border: 2px solid;
 }
 a:hover
@@ -16,8 +16,11 @@ a:hover
   text-decoration: none !important;
   color:black !important;
 }
+a{
+  color:#f9ebe0 !important;
+}
 .navbar-item:hover{
-  background-color:#e8a87c !important;
+  background-color:#e5c687 !important;
 }
 
 </style>
