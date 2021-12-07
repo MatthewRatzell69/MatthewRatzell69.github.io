@@ -20,19 +20,21 @@ let xAtClick;
 let yAtClick;
 let decider;
 let balls = [];
+let walls = [];
 let canvasElement = document.querySelector("canvas"); // hookup <canvas> element
-let gameState = GameState.MAIN;
+let gameState = GameState.START;
 let numberOfBalls;
 let currentLevel = 0;
-let startX = 500;
+let startX = 475;
+let bulletImg;
 
 
-let startY = 50;
+let startY = 25;
 function init() {
-
+  bulletImg = document.getElementById("bulletImg");
   numberOfBalls = 3;
   //create our bullet at the center
-  bullet = new Bullet(canvas.getCtx(), startX, startY, 1);
+  bullet = new Bullet(canvas.getCtx(), 475, 25, 1, 25, bulletImg);
   //setting this to fault at the start so the bullet isnt moving arround
   decider = false;
   //adding a random ball somewhere
@@ -53,8 +55,8 @@ function init() {
     if (bullet.getX() == startX && bullet.getY() == startY) {
       doMouseDown(getMousePosition(canvasElement, e));
     }
-
   });
+  createWalls();
 
 }
 
@@ -81,6 +83,13 @@ function loop(timestamp) {
       //movement
       bullet.moveBullet(canvas.getCtx(), xAtClick, yAtClick);
 
+      for (let i = 0; i < walls.length; i++) {
+
+        if (bullet.checkColliding(getWall(i).getX(), getWall(i).getY(), getWall(i).getRadius())) {
+
+          return;
+        }
+      }
       //collision detection
       for (let i = 0; i < balls.length; i++) {
         //if it is colliding with one we exit the loop so that the collision detection doesnt only work with the last ball
@@ -94,6 +103,9 @@ function loop(timestamp) {
     }
     //make sure draw is always being called at the end of our logic
     canvas.draw();
+  }
+  else if(gameState == GameState.START){
+    canvas.drawScreen();
   }
 
 }
@@ -124,7 +136,7 @@ function loadLevel(levelNum) {
 function drawHUD() {
   switch (gameState) {
     case GameState.START:
-      canvas.getCtx().save();
+      utils.drawButton(canvas.getCtx(),50,50,700,50,"clear",0,"black","Horse Plinko",)
       // Draw background
       // Draw Text
       break;
@@ -134,7 +146,7 @@ function drawHUD() {
       utils.fillText(canvas.getCtx(), `Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 270, 25);
       // strokeText(canvas.getCtx(),`Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 100, 25);
       break;
-    case GameState.LEVELOVER:
+    case GameState.INSTRUCTIONS:
       // draw level results
       break;
     case GameState.GAMEOVER:
@@ -163,9 +175,16 @@ function incrementBalls() {
 function getBall(i) {
   return balls[i];
 }
+//getter for a specific wall
+function getWall(i) {
+  return walls[i];
+}
 //getter for the entire ball array
 function getBallArray() {
   return balls;
+}
+function getWallArray() {
+  return walls;
 }
 function getBullet() {
   return bullet;
@@ -196,6 +215,83 @@ function doMouseDown(array) {
     */
   }
 }
+function createWalls() {
+  /////////////////////////////////drawing walls//////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //drawing a singular wall
+  let x = 75;
+  let y = 800;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+  y = 800
+  x = 225;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+  y = 800
+  x = 300;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+  y = 800
+  x = 450;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+  y = 800
+  x = 550;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+  y = 800
+  x = 700;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+  y = 800
+  x = 775;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+  y = 800
+  x = 925;
+  for (let i = 0; i < 25; i++) {
+    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    y -= 4;
+  }
+}
+
+
+function retrieveInstructions() 
+{
+
+
+  const url = "data/babble-data.json";
+  const xhr = new XMLHttpRequest();
+
+  xhr.onload = (e) => {
+    console.log(`In onload - HTTP Status Code = ${e.target.status}`);
+    let json;
+    //parsing in a try catch incase our json file is broke
+    try {
+      json = JSON.parse(e.target.responseText);
+    } catch {
+      console.log("error loading in json instructions");
+    }
+
+
+    //getting array of keys which are the guids this is like keys and dictionary
+    const keys = Object.keys(json);
+  }
+}
 
 
 
@@ -204,5 +300,4 @@ function doMouseDown(array) {
 
 
 
-
-export { init, getBall, getBallArray, getBullet, decrementBalls };
+  export { init, getBall, getBallArray, getBullet, decrementBalls, getWall, getWallArray };

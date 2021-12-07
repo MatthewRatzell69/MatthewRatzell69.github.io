@@ -3,16 +3,16 @@ import Balls from './BallsClass.js';
 import * as utils from './utils.js';
 
 export default class Bullet {
-    constructor(ctx, x, y, speed, radius = 25, fillStyle = "red", lineWidth = 2, strokeStyle = "yellow") {
+    constructor(ctx, x, y, speed, radius = 25, image) {
         //super();
         this.isAlive = false;
         this.gravityScale = .01;
         this.x = x;
         this.y = y;
-        this.radius = radius;
-        this.fillStyle = fillStyle;
-        this.lineWidth = lineWidth;
-        this.strokeStyle = strokeStyle;
+        this.radius = 25;
+        this.diameter = 2*this.radius;
+        this.image = image;
+      
         this.isColliding = false;
         this.hasCollided = false;
         this.dx = 0;
@@ -22,20 +22,13 @@ export default class Bullet {
     //this is where the methods and getters and setters will go
     drawBullet(ctx) {
         ctx.save();
-        ctx.fillStyle = this.fillStyle;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fill();
-        if (this.lineWidth > 0) {
-            ctx.lineWidth = this.lineWidth;
-            ctx.strokeStyle = this.strokeStyle;
-            ctx.stroke();
-        }
-        ctx.closePath();
+        //ctx.rotate(10*Math.PI/180);
+        ctx.drawImage(this.image,this.x,this.y,this.diameter,this.diameter);
         ctx.restore();
     }
 
     moveBullet(ctx, xTarget, yTarget, dt = 1 / 60) {
+       
         this.isAlive = true;
         //before collision
         if (!this.hasCollided) {
@@ -45,12 +38,11 @@ export default class Bullet {
             //increment for largely here 
             this.gravityScale += .01;
         }
-        //after
         else {
             //reverse the ball when it hits initially
             if (this.isColliding) {
-                this.dx = -this.dx + utils.getRandom(-3,3);
-                this.dy = -this.dy * 1.05;
+                this.dx = -this.dx*.95  +utils.getRandom(-2,2);
+                this.dy = -this.dy * .95;
                 //reset gravity scale 
                 this.gravityScale = .01;
             }
@@ -60,7 +52,7 @@ export default class Bullet {
             this.dy = (this.dy * .99) + this.gravityScale;
             //making sure we increment gravity scale
             this.gravityScale += .0003;
-            console.log(`X:${this.dx} Y:${this.dy}`);
+            //console.log(`X:${this.dx} Y:${this.dy}`);
         }
 
         this.x += this.dx;
@@ -88,8 +80,8 @@ export default class Bullet {
     resetBall() {
         main.decrementBalls();
         this.isAlive = false;
-        this.x = 500;
-        this.y = 50;
+        this.x = 475;
+        this.y = 25;
         this.dx = 0;
         this.dy = 0;
         this.hasCollided = false;
@@ -98,8 +90,8 @@ export default class Bullet {
 
     checkColliding(ballX, ballY, ballRadius) {
         //first get the distance of our x and y to later use poppyseeds therorem for triangulating the center of jupiter
-        let dx = (ballX + ballRadius) - (this.x + this.radius);
-        let dy = (ballY + ballRadius) - (this.y + this.radius);
+        let dx = (ballX + ballRadius-25) - (this.x + this.radius);
+        let dy = (ballY + ballRadius-25) - (this.y + this.radius);
         //pythagorem theorem 
         let distance = Math.sqrt(dx * dx + dy * dy);
         //bounding circle 2d collision detection really really simple

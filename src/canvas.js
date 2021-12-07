@@ -2,33 +2,39 @@ import * as utils from './utils.js';
 import * as main from './main.js';
 
 
-let ctx, canvasWidth, canvasHeight;
+let ctx, canvasWidth, canvasHeight,imageOfBucket,backgroundImage;
 
 
 function setupCanvas(canvasElement) 
 {
     // create drawing context
     //create our bullet
-    
+    imageOfBucket = document.getElementById("bucketImg");
+    backgroundImage = document.getElementById("base");
     ctx = canvasElement.getContext("2d");
     canvasWidth = canvasElement.width;
     canvasHeight = canvasElement.height;
+
+
 }
 
 function getCtx()
 {
     return ctx;
 }
-
-function draw(params = {}) {
-
-    // 2 - draw background
+function drawScreen(){
     ctx.save();
-    ctx.fillStyle = "black";
-    ctx.globalAlpha = .3;
+    ctx.fillStyle = "lightblue";
+    ctx.globalAlpha = .5;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.restore();
     
+}
+function draw(params = {}) {
+
+
+
+    drawScreen();
 
     //draw the bullet
     
@@ -41,20 +47,29 @@ function draw(params = {}) {
         main.getBall(i).drawBall(ctx);
     }
 
+    /*
+    for(let i =0;i<main.getWallArray().length;i++)
+    {
+        
+        main.getWall(i).drawBall(ctx);
+    }
+*/
+//drawbullet
     if(main.getBullet() != null){
+        
         main.getBullet().drawBullet(ctx);
     }
-    utils.drawRectangle(ctx,0,canvasHeight-100,canvasWidth,100,"black");
-    //DRAW THE PLInko cups
+    
+    //DRAW THE PLInko cups and black bars
     ctx.save();
-    //75-225 //300-450 // 550-700 //775-925
-    utils.drawRectangle(ctx,75,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
-    utils.drawRectangle(ctx,50+canvasWidth/4,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
-    utils.drawRectangle(ctx,50+canvasWidth/2,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
-    utils.drawRectangle(ctx,canvasWidth-225,canvasHeight-100,canvasWidth/4-100,100,"red",3,"grey");
+    utils.drawRectangle(ctx,0,canvasHeight-30,canvasWidth,100,"lightblue");
+    ctx.drawImage(imageOfBucket,55,650,155,150);
+    ctx.drawImage(imageOfBucket,280,650,155,150);
+    ctx.drawImage(imageOfBucket,530,650,155,150);
+    ctx.drawImage(imageOfBucket,755,650,155,150);
     ctx.restore();
     
 }
 
 
-export { setupCanvas, draw, getCtx };
+export { setupCanvas, draw, getCtx,drawScreen };

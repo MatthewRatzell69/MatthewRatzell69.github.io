@@ -36,7 +36,22 @@ function drawRectangle(ctx, x, y, width, height, fillStyle = "red", lineWidth = 
   ctx.closePath();
   ctx.restore();
 }
-function fillText(ctx, string, x, y, css = "18pt 'Press Start 2P', cursive", color = "orange") {
+function drawButton(ctx, x, y, width, height, fillStyle = "red", lineWidth = 0, strokeStyle = "red",buttonText){
+  ctx.save();
+  ctx.fillStyle = fillStyle;
+  ctx.beginPath();
+  ctx.rect(x, y, width, height);
+  ctx.fill();
+  if (lineWidth > 0) {
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = strokeStyle;
+    ctx.stroke();
+  }
+  ctx.closePath();
+  ctx.restore();
+  fillText(ctx,buttonText,x,y+.5*height,"58pt 'Press Start 2P', cursive");
+}
+function fillText(ctx, string, x, y, css = "18pt 'Press Start 2P', cursive", color = "Black") {
   canvas.getCtx().save();
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font
   canvas.getCtx().font = css;
@@ -67,4 +82,4 @@ const goFullscreen = (element) => {
   // .. and do nothing if the method is not supported
 };
 
-export { makeColor, getRandomColor, getLinearGradient, goFullscreen, getRandom,fillText,strokeText,drawRectangle };
+export { makeColor, getRandomColor, getLinearGradient, goFullscreen, getRandom,fillText,strokeText,drawRectangle,drawButton };
