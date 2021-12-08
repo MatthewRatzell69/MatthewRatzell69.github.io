@@ -9,7 +9,7 @@ import Balls from './BallsClass.js';
 const GameState = Object.freeze({
   START: Symbol("START"),
   MAIN: Symbol("MAIN"),
-  LEVELOVER: Symbol("LEVELOVER"),
+  INSTRUCTIONS: Symbol("INSTRUCTIONS"),
   GAMEOVER: Symbol("GAMEOVER")
 });
 
@@ -27,9 +27,9 @@ let numberOfBalls;
 let currentLevel = 0;
 let startX = 475;
 let bulletImg;
-
-
 let startY = 25;
+let instructions=[];
+
 function init() {
   bulletImg = document.getElementById("bulletImg");
   numberOfBalls = 3;
@@ -41,6 +41,8 @@ function init() {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //function that loads in instructions from json
+  retrieveInstructions();
   //next setup canvas
   canvas.setupCanvas(canvasElement);
   //first set up our UI
@@ -53,6 +55,10 @@ function init() {
     bullet.setAlive();
     //we only want this code to run if our bullet is centered at the start
     if (bullet.getX() == startX && bullet.getY() == startY) {
+      doMouseDown(getMousePosition(canvasElement, e));
+    }
+    //this else is gonna handle other scenes
+    else{
       doMouseDown(getMousePosition(canvasElement, e));
     }
   });
@@ -105,7 +111,21 @@ function loop(timestamp) {
     canvas.draw();
   }
   else if(gameState == GameState.START){
+    //draw background
     canvas.drawScreen();
+    //input handler
+    handleInputOnStartScreen();
+  }
+  else if(gameState == GameState.INSTRUCTIONS){
+     //draw background
+    canvas.drawScreen();
+    //input handler
+    handleInputOnInstructionsScreen();
+    
+  }
+  else{
+    canvas.drawScreen();
+    highScoreScreen();
   }
 
 }
@@ -136,18 +156,31 @@ function loadLevel(levelNum) {
 function drawHUD() {
   switch (gameState) {
     case GameState.START:
-      utils.drawButton(canvas.getCtx(),50,50,700,50,"clear",0,"black","Horse Plinko",)
+
+      canvas.getCtx().save();
+      utils.drawButton(canvas.getCtx(),150,300,250,50,"Play Game");
+      utils.drawButton(canvas.getCtx(),150,400,250,50,"View Instructions");
+      utils.fillText(canvas.getCtx(),"Horse Plinko",50,150,"58pt 'Roboto', cursive");
+      utils.fillText(canvas.getCtx(),"Horse Plinko",50,150,"58pt 'Roboto', cursive");
+      canvas.getCtx().restore();
       // Draw background
       // Draw Text
       break;
     case GameState.MAIN:
       // draw score
+      canvas.getCtx().save();
       utils.fillText(canvas.getCtx(), `Current Level:${currentLevel}`, canvasElement.width - 975, 25);
-      utils.fillText(canvas.getCtx(), `Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 270, 25);
-      // strokeText(canvas.getCtx(),`Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 100, 25);
+      utils.fillText(canvas.getCtx(), `Score${currentLevel}`, canvasElement.width - 975, 125);
+      utils.fillText(canvas.getCtx(), `Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 270, 25); 
+      canvas.getCtx().restore();
       break;
     case GameState.INSTRUCTIONS:
-      // draw level results
+      canvas.getCtx().save();
+      utils.drawButton(canvas.getCtx(),150,350,250,50,"Return to Start Screen");
+      utils.fillText(canvas.getCtx(),instructions[0],50,150,"18pt 'Roboto', cursive");
+      utils.fillText(canvas.getCtx(),instructions[1],50,200,"18pt 'Roboto', cursive");
+      utils.fillText(canvas.getCtx(),instructions[2],50,250,"18pt 'Roboto', cursive");
+      canvas.getCtx().restore();
       break;
     case GameState.GAMEOVER:
       // draw game results
@@ -215,6 +248,19 @@ function doMouseDown(array) {
     */
   }
 }
+function handleInputOnStartScreen(){
+  if(xAtClick>=150&&xAtClick<=400&&yAtClick>=300&&yAtClick<350){
+    gameState = GameState.MAIN;
+  }
+  else if(xAtClick>=150&&xAtClick<=400&&yAtClick>=400&&yAtClick<=450){
+    gameState = GameState.INSTRUCTIONS;
+  }
+}
+function handleInputOnInstructionsScreen(){
+  if(xAtClick>=150&&xAtClick<=400&&yAtClick>=350&&yAtClick<=400){
+    gameState = GameState.START;
+  }
+}
 function createWalls() {
   /////////////////////////////////drawing walls//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
@@ -273,24 +319,36 @@ function createWalls() {
 function retrieveInstructions() 
 {
 
+	//fetch this jimmy jawn
+	fetch("../data/instructions-data.json")
+	.then(response=>{
+		//if response is successful, return the JSON
+		if(response.ok){
+			return response.json();//piping to next.then
+		}
+		//else throw an error that will be caught below
+		return response.text().then(text=>{
+			throw text;//goes right to catch
+		});
+	})//send the response.json() promise to the next .then()
+		.then(json=>{//the second promise is resolved and json is a json object
+			console.log(json);
 
-  const url = "data/babble-data.json";
-  const xhr = new XMLHttpRequest();
+			/////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////
+      //getting the keys 
+      const keys = Object.keys(json);
+      //looping through each key and passing the instructions along
+      for(let k of keys){
+        const obj = json[k];
+        instructions.push(obj.instructions);
+      }
 
-  xhr.onload = (e) => {
-    console.log(`In onload - HTTP Status Code = ${e.target.status}`);
-    let json;
-    //parsing in a try catch incase our json file is broke
-    try {
-      json = JSON.parse(e.target.responseText);
-    } catch {
-      console.log("error loading in json instructions");
-    }
-
-
-    //getting array of keys which are the guids this is like keys and dictionary
-    const keys = Object.keys(json);
-  }
+		}).catch(error => {
+			//error
+			console.log(error);
+	});
 }
 
 

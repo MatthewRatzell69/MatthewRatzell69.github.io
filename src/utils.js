@@ -36,7 +36,7 @@ function drawRectangle(ctx, x, y, width, height, fillStyle = "red", lineWidth = 
   ctx.closePath();
   ctx.restore();
 }
-function drawButton(ctx, x, y, width, height, fillStyle = "red", lineWidth = 0, strokeStyle = "red",buttonText){
+function drawButton(ctx, x, y, width, height,buttonText, css="18pt 'Roboto', cursive", fillStyle = "red", lineWidth = 0, strokeStyle = "red"){
   ctx.save();
   ctx.fillStyle = fillStyle;
   ctx.beginPath();
@@ -49,7 +49,7 @@ function drawButton(ctx, x, y, width, height, fillStyle = "red", lineWidth = 0, 
   }
   ctx.closePath();
   ctx.restore();
-  fillText(ctx,buttonText,x,y+.5*height,"58pt 'Press Start 2P', cursive");
+  fillText(ctx,buttonText,x+12,y+30,css);
 }
 function fillText(ctx, string, x, y, css = "18pt 'Press Start 2P', cursive", color = "Black") {
   canvas.getCtx().save();
