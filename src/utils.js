@@ -81,5 +81,12 @@ const goFullscreen = (element) => {
   }
   // .. and do nothing if the method is not supported
 };
-
-export { makeColor, getRandomColor, getLinearGradient, goFullscreen, getRandom,fillText,strokeText,drawRectangle,drawButton };
+function getRandomString(length) {
+  var randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var result = '';
+  for ( var i = 0; i < length; i++ ) {
+      result += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+  }
+  return result;
+}
+export { makeColor, getRandomColor, getLinearGradient, goFullscreen, getRandom,fillText,strokeText,drawRectangle,drawButton,getRandomString };

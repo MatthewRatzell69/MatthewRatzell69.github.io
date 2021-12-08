@@ -68,6 +68,8 @@ function draw(params = {}) {
     ctx.drawImage(imageOfBucket,530,650,155,150);
     ctx.drawImage(imageOfBucket,755,650,155,150);
     ctx.restore();
+
+    
     
 }
 

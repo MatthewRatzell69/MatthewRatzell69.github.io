@@ -1,5 +1,6 @@
 import * as utils from './utils.js';
 import * as canvas from './canvas.js';
+import * as firebase from './firebase.js';
 import Bullet from './BulletClass.js';
 import Balls from './BallsClass.js';
 
@@ -10,37 +11,63 @@ const GameState = Object.freeze({
   START: Symbol("START"),
   MAIN: Symbol("MAIN"),
   INSTRUCTIONS: Symbol("INSTRUCTIONS"),
-  GAMEOVER: Symbol("GAMEOVER")
+  GAMEOVER: Symbol("GAMEOVER"),
+  GAMEOVERPRIOR: Symbol("GAMEOVERPRIOR")
 });
 
 //this array will  hold all of the balls on the screen
+let score;
 let bullet;
 //these will remember the x and y that was clicked orginally 
 let xAtClick;
 let yAtClick;
 let decider;
-let balls = [];
-let walls = [];
-let canvasElement = document.querySelector("canvas"); // hookup <canvas> element
-let gameState = GameState.START;
+let balls;
+let walls;
+let canvasElement;
+let nameInputField;
+let gameState;
 let numberOfBalls;
-let currentLevel = 0;
-let startX = 475;
+let currentLevel;
+let startX;
+let startY;
 let bulletImg;
-let startY = 25;
-let instructions=[];
+let instructions;
+let userName;
+let savedState;
+let map;
+let topTenNames;
+let topTenScores;
+
 
 function init() {
-  bulletImg = document.getElementById("bulletImg");
-  numberOfBalls = 3;
   //create our bullet at the center
-  bullet = new Bullet(canvas.getCtx(), 475, 25, 1, 25, bulletImg);
+  score = 21300;
   //setting this to fault at the start so the bullet isnt moving arround
   decider = false;
-  //adding a random ball somewhere
+  balls = [];
+  walls = [];
+  topTenNames = [];
+  topTenScores = [];
+  canvasElement = document.querySelector("canvas"); // hookup <canvas> element
+  nameInputField = document.querySelector("#nameField");
+  nameInputField.style.display = "none"
+  gameState = GameState.MAIN;
+  numberOfBalls = 3;
+  currentLevel = 0;
+  startX = 475;
+  startY = 25;
+  bulletImg = document.getElementById("bulletImg");
+  bullet = new Bullet(canvas.getCtx(), 475, 25, 1, 25, bulletImg);
+  instructions = [];
+  savedState = false;
+  userName = "NoNameDingus";
+  map = new Map();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //set up firebase
+  firebase.setUpFireBase();
   //function that loads in instructions from json
   retrieveInstructions();
   //next setup canvas
@@ -58,7 +85,7 @@ function init() {
       doMouseDown(getMousePosition(canvasElement, e));
     }
     //this else is gonna handle other scenes
-    else{
+    else {
       doMouseDown(getMousePosition(canvasElement, e));
     }
   });
@@ -68,13 +95,15 @@ function init() {
 
 
 function loop(timestamp) {
-  /* NOTE: This is temporary testing code that we will delete in Part II */
   requestAnimationFrame(loop);
-
-  //draw the hud every frame
-  drawHUD();
+  //drawHUD();
+  //if the player loses change to the name grabbing menu
+  if (numberOfBalls <= 0) {
+    gameState = GameState.GAMEOVERPRIOR;
+  }
 
   if (gameState == GameState.MAIN) {
+
     //if there are no more balls we will load the next level
     if (balls.length <= 0) {
       //increment the level
@@ -92,7 +121,9 @@ function loop(timestamp) {
       for (let i = 0; i < walls.length; i++) {
 
         if (bullet.checkColliding(getWall(i).getX(), getWall(i).getY(), getWall(i).getRadius())) {
-
+          //has to go here because of 
+          canvas.draw();
+          drawHUD();
           return;
         }
       }
@@ -101,6 +132,8 @@ function loop(timestamp) {
         //if it is colliding with one we exit the loop so that the collision detection doesnt only work with the last ball
         if (bullet.checkColliding(getBall(i).getX(), getBall(i).getY(), getBall(i).getRadius())) {
           //remove the ball it collided with
+          canvas.draw();
+          drawHUD();
           balls.splice(i, 1);
           return;
         }
@@ -109,25 +142,36 @@ function loop(timestamp) {
     }
     //make sure draw is always being called at the end of our logic
     canvas.draw();
+    drawHUD();
+
   }
-  else if(gameState == GameState.START){
+
+  else if (gameState == GameState.START) {
     //draw background
     canvas.drawScreen();
     //input handler
     handleInputOnStartScreen();
+    //draw the hud every frame
+
+
   }
-  else if(gameState == GameState.INSTRUCTIONS){
-     //draw background
+  else if (gameState == GameState.INSTRUCTIONS) {
+    //draw background
     canvas.drawScreen();
     //input handler
     handleInputOnInstructionsScreen();
-    
+
   }
-  else{
+  else if (gameState == GameState.GAMEOVERPRIOR) {
+
+    canvas.drawScreen();
+    handleNameInput();
+  }
+  else if (gameState == GameState.GAMEOVER) {
     canvas.drawScreen();
     highScoreScreen();
   }
-
+  drawHUD();
 }
 
 //this is where ball creation will be handeled
@@ -153,15 +197,42 @@ function loadLevel(levelNum) {
 
 }
 
+
+
+
+function handleNameInput() {
+numberOfBalls = 3;
+  nameInputField.style.display = "block";
+  //update the onscreen text 
+  nameInputField.oninput = function () {
+    //set the username to the value so it takes effect
+    userName = nameInputField.value;
+
+  }
+  canvas.getCtx().restore();
+
+  //make sure we handle if the user clicks the button
+  if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 400 && yAtClick <= 450) {
+    //make sure we update the data on the server
+    firebase.writeScoreNameData(userName, score, utils.getRandomString(10));
+    //from there we grab our ordered map
+    map = firebase.returnMapGlobal();
+    //make sure we also turn off the text box
+    nameInputField.style.display = "none";
+    //process our map
+    //draw out the top 10 scores
+    gameState = GameState.GAMEOVER;
+  }
+}
+
 function drawHUD() {
   switch (gameState) {
     case GameState.START:
-
       canvas.getCtx().save();
-      utils.drawButton(canvas.getCtx(),150,300,250,50,"Play Game");
-      utils.drawButton(canvas.getCtx(),150,400,250,50,"View Instructions");
-      utils.fillText(canvas.getCtx(),"Horse Plinko",50,150,"58pt 'Roboto', cursive");
-      utils.fillText(canvas.getCtx(),"Horse Plinko",50,150,"58pt 'Roboto', cursive");
+      utils.drawButton(canvas.getCtx(), 150, 300, 250, 50, "Play Game");
+      utils.drawButton(canvas.getCtx(), 150, 400, 250, 50, "View Instructions");
+      utils.fillText(canvas.getCtx(), "Horse Plinko", 50, 150, "58pt 'Roboto', cursive");
+      utils.fillText(canvas.getCtx(), "Horse Plinko", 50, 150, "58pt 'Roboto', cursive");
       canvas.getCtx().restore();
       // Draw background
       // Draw Text
@@ -170,20 +241,42 @@ function drawHUD() {
       // draw score
       canvas.getCtx().save();
       utils.fillText(canvas.getCtx(), `Current Level:${currentLevel}`, canvasElement.width - 975, 25);
-      utils.fillText(canvas.getCtx(), `Score${currentLevel}`, canvasElement.width - 975, 125);
-      utils.fillText(canvas.getCtx(), `Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 270, 25); 
+      utils.fillText(canvas.getCtx(), `Score:${score}`, canvasElement.width - 975, 125);
+      utils.fillText(canvas.getCtx(), `Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 270, 25);
       canvas.getCtx().restore();
       break;
     case GameState.INSTRUCTIONS:
       canvas.getCtx().save();
-      utils.drawButton(canvas.getCtx(),150,350,250,50,"Return to Start Screen");
-      utils.fillText(canvas.getCtx(),instructions[0],50,150,"18pt 'Roboto', cursive");
-      utils.fillText(canvas.getCtx(),instructions[1],50,200,"18pt 'Roboto', cursive");
-      utils.fillText(canvas.getCtx(),instructions[2],50,250,"18pt 'Roboto', cursive");
+      utils.drawButton(canvas.getCtx(), 150, 350, 250, 50, "Return to Start Screen");
+      utils.fillText(canvas.getCtx(), instructions[0], 50, 150, "18pt 'Oswald', cursive");
+      utils.fillText(canvas.getCtx(), instructions[1], 50, 200, "18pt 'Oswald', cursive");
+      utils.fillText(canvas.getCtx(), instructions[2], 50, 250, "18pt 'Oswald', cursive");
       canvas.getCtx().restore();
       break;
-    case GameState.GAMEOVER:
+    case GameState.GAMEOVERPRIOR:
+      canvas.getCtx().save();
+      utils.fillText(canvas.getCtx(), `Your score is:${score}`, 50, 150, "18pt 'Roboto', cursive");
+      utils.fillText(canvas.getCtx(), "Please imput your name into the box above", 50, 200, "18pt 'Roboto', cursive");
+      utils.fillText(canvas.getCtx(), `The currently imputted name is:${userName} `, 50, 250, "18pt 'Roboto', cursive");
+      //button to advance to highscores
+      utils.drawButton(canvas.getCtx(), 150, 400, 250, 50, "View Highscores");
+      canvas.getCtx().restore();
       // draw game results
+      break;
+    case GameState.GAMEOVER:
+      canvas.getCtx().save();
+      utils.fillText(canvas.getCtx(), `Top 10 Scores`, 400, 75, "28pt 'Oswald', cursive");
+      //this offset will be used for offsetting the lines
+      let offset = 0;
+      for (let i = 1; i < 11; i++) {
+        //draw what needs to be drawn each iteration
+        utils.fillText(canvas.getCtx(), `${i}. ${topTenNames[i]}:${topTenScores[i]}`, 50, 150 + offset, "18pt 'Oswald', cursive");
+        //increment our offset
+        offset = offset + 50;
+      }
+      utils.drawButton(canvas.getCtx(), 150, 700, 250, 50, "Return to Start Screen");
+      // draw game results
+      canvas.getCtx().restore();
       break;
 
     default:
@@ -196,6 +289,8 @@ function setupUI(canvasElement) {
 
 } // end setupUI
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 //this function will be accessed by our bullet class to allow it to decrease the number of balls we have
 function decrementBalls() {
   numberOfBalls--;
@@ -222,6 +317,8 @@ function getWallArray() {
 function getBullet() {
   return bullet;
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 //function that will return the mouse position we need
 function getMousePosition(canvas, event) {
   let newArray = [];
@@ -248,19 +345,47 @@ function doMouseDown(array) {
     */
   }
 }
-function handleInputOnStartScreen(){
-  if(xAtClick>=150&&xAtClick<=400&&yAtClick>=300&&yAtClick<350){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+function handleInputOnStartScreen() {
+  if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 300 && yAtClick < 350) {
     gameState = GameState.MAIN;
   }
-  else if(xAtClick>=150&&xAtClick<=400&&yAtClick>=400&&yAtClick<=450){
+  else if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 400 && yAtClick <= 450) {
     gameState = GameState.INSTRUCTIONS;
   }
 }
-function handleInputOnInstructionsScreen(){
-  if(xAtClick>=150&&xAtClick<=400&&yAtClick>=350&&yAtClick<=400){
+function handleInputOnInstructionsScreen() {
+  if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 350 && yAtClick <= 400) {
     gameState = GameState.START;
   }
 }
+
+function highScoreScreen() {
+  if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 700 && yAtClick <= 750) {
+    window.location.pathname = './about.html';
+   // gameState = GameState.START;
+  }
+
+  for (let i = 0; i < 10; i++) {
+    if (map[i] == undefined) {
+      return;
+    }
+    //get the two values we want
+    let score = map[i][0];
+    let name = map[i][1];
+
+    //split this back down into its two arrays
+    topTenNames.push(name);
+    topTenScores.push(score);
+
+  }
+
+
+
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 function createWalls() {
   /////////////////////////////////drawing walls//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
@@ -314,41 +439,38 @@ function createWalls() {
     y -= 4;
   }
 }
+function retrieveInstructions() {
 
+  //fetch this jimmy jawn
+  fetch("../data/instructions-data.json")
+    .then(response => {
+      //if response is successful, return the JSON
+      if (response.ok) {
+        return response.json();//piping to next.then
+      }
+      //else throw an error that will be caught below
+      return response.text().then(text => {
+        throw text;//goes right to catch
+      });
+    })//send the response.json() promise to the next .then()
+    .then(json => {//the second promise is resolved and json is a json object
+      console.log(json);
 
-function retrieveInstructions() 
-{
-
-	//fetch this jimmy jawn
-	fetch("../data/instructions-data.json")
-	.then(response=>{
-		//if response is successful, return the JSON
-		if(response.ok){
-			return response.json();//piping to next.then
-		}
-		//else throw an error that will be caught below
-		return response.text().then(text=>{
-			throw text;//goes right to catch
-		});
-	})//send the response.json() promise to the next .then()
-		.then(json=>{//the second promise is resolved and json is a json object
-			console.log(json);
-
-			/////////////////////////////////////////////////////////////////////////////////////////
-			////////////////////////////////////////////////////////////////////////////////////////
-			////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////
       //getting the keys 
       const keys = Object.keys(json);
       //looping through each key and passing the instructions along
-      for(let k of keys){
+      for (let k of keys) {
         const obj = json[k];
         instructions.push(obj.instructions);
       }
 
-		}).catch(error => {
-			//error
-			console.log(error);
-	});
+    }).catch(error => {
+      //error
+      console.log(error);
+    });
 }
 
 
@@ -358,4 +480,4 @@ function retrieveInstructions()
 
 
 
-  export { init, getBall, getBallArray, getBullet, decrementBalls, getWall, getWallArray };
+export { init, getBall, getBallArray, getBullet, decrementBalls, incrementBalls, getWall, getWallArray };
