@@ -2,7 +2,7 @@ import * as main from './main.js';
 import * as utils from './utils.js';
 
 export default class Bullet {
-    constructor(ctx, x, y, speed, radius = 25, image,) {
+    constructor(ctx, x, y, speed, radius = 25, image) {
         //super();
         this.isAlive = false;
         this.gravityScale = .01;

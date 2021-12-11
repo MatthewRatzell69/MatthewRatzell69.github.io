@@ -3,8 +3,10 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Horse Plinko</title>
+    <link rel="shortcut icon" type="image/png" href="./media/horse.png"/>
 	<link href="styles/default-styles.css" type="text/css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.9/howler.min.js"></script>
 	<script src="./src/appLoader.js" type="module"></script>
 </head>
 <body>
@@ -12,13 +14,13 @@
     <sw-nav data-currentPage="app"></sw-nav>
     <br>
     <br>
-    <input hidden id="nameField"class="input"width="50%" type="text" placeholder="Text input">
+    <input hidden id="nameField" class="input" type="text" placeholder="Text input">
 	<canvas width="1000" height="800"></canvas>
     <br>
     <br>
-    <img id="bulletImg" src="./media/bulletTest1.png">
-    <img id="bucketImg" src="./media/bucketTest1.png">
-    <img id="base" src="./media/backgroundImg.png">
+    <img id="bulletImg" alt="hiddenBulletImage" src="./media/bulletTest1.png">
+    <img id="bucketImg" alt="hiddenBucketImage" src="./media/bucketTest1.png">
+    <img id="base" alt="hiddenBackgroundImage" src="./media/backgroundImg.png">
 	
 <sw-footer></sw-footer>
 	  

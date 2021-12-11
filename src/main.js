@@ -34,11 +34,13 @@ let startY;
 let bulletImg;
 let instructions;
 let userName;
-let savedState;
 let map;
 let topTenNames;
 let topTenScores;
-
+//declaring our sounds
+let hitSound;
+let backgroundSound;
+let shootSound;
 
 function init() {
   //create our bullet at the center
@@ -60,9 +62,24 @@ function init() {
   bulletImg = document.getElementById("bulletImg");
   bullet = new Bullet(canvas.getCtx(), 475, 25, 1, 25, bulletImg);
   instructions = [];
-  savedState = false;
   userName = utils.getRandomString(12);
   map = new Map();
+  //setting up our sounds now
+
+  backgroundSound = new Howl({
+    src: ['./music/backgroundMusic.mp3'],
+    volume: .1
+  });
+
+  hitSound = new Howl({
+    src: ['./music/hitMusic.mp3'],
+    volume: .3
+  });
+
+  shootSound = new Howl({
+    src: ['./music/shootMusic.mp3'],
+    volume: .3
+  });
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +89,6 @@ function init() {
   retrieveInstructions();
   //next setup canvas
   canvas.setupCanvas(canvasElement);
-  //first set up our UI
-  setupUI(canvasElement);
   //run our logic loop
   loop();
 
@@ -82,10 +97,11 @@ function init() {
     bullet.setAlive();
     //we only want this code to run if our bullet is centered at the start
     if (bullet.getX() == startX && bullet.getY() == startY) {
+
       doMouseDown(getMousePosition(canvasElement, e));
     }
     //this else is gonna handle other scenes
-    else {
+    else if(!gameState == GameState.MAIN) {
       doMouseDown(getMousePosition(canvasElement, e));
     }
   });
@@ -95,8 +111,13 @@ function init() {
 
 
 function loop(timestamp) {
+
   requestAnimationFrame(loop);
-  //drawHUD();
+
+  if(!backgroundSound.playing()){
+    backgroundSound.play();
+  }
+  
   //if the player loses change to the name grabbing menu
   if (numberOfBalls <= 0) {
     gameState = GameState.GAMEOVERPRIOR;
@@ -130,12 +151,14 @@ function loop(timestamp) {
       //collision detection
       for (let i = 0; i < balls.length; i++) {
         //if it is colliding with one we exit the loop so that the collision detection doesnt only work with the last ball
-        if (bullet.checkColliding(getBall(i).getX(), getBall(i).getY(), getBall(i).getRadius(),getBall(i).getHasBounce())) {
+        if (bullet.checkColliding(getBall(i).getX(), getBall(i).getY(), getBall(i).getRadius(), getBall(i).getHasBounce())) {
           //remove the ball it collided with
           canvas.draw();
           drawHUD();
-          score+=10;
+          score += 10;
           balls.splice(i, 1);
+          //play hit sound
+          hitSound.play();
           return;
         }
       }
@@ -171,7 +194,7 @@ function loop(timestamp) {
   else if (gameState == GameState.GAMEOVER) {
     canvas.drawHomeScreen();
     handleInputOnHighScoreScreen();
-    
+
   }
   drawHUD();
 }
@@ -179,22 +202,100 @@ function loop(timestamp) {
 //this is where ball creation will be handeled
 function loadLevel(levelNum) {
   if (levelNum == 1) {
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 - 250, 300,25,true));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 + 250, 300,25,true));
-    balls.push(new Balls(canvas.getCtx(), 50, 400,25,false));
-    balls.push(new Balls(canvas.getCtx(), 125, 475,25,true));
-    balls.push(new Balls(canvas.getCtx(), 200, 550,25,false));
-    balls.push(new Balls(canvas.getCtx(), 275, 625,25,false));
-    balls.push(new Balls(canvas.getCtx(), 350, 650,25,false));
-    balls.push(new Balls(canvas.getCtx(), 425, 650,25,false));
-    balls.push(new Balls(canvas.getCtx(), 500, 650,25,false));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 425, 650,25,false));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 350, 650,25,true));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 275, 625,25,false));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 200, 550,25,false));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 125, 475,25,false));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 50, 400,25,true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 - 250, 300, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 + 250, 300, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 50, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 125, 475, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 200, 550, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 275, 625, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 350, 650, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 425, 650, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 500, 650, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 425, 650, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 350, 650, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 275, 625, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 200, 550, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 125, 475, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 50, 400, 25, true));
   }
+  else if(levelNum ==2){
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 , 200, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 , 250, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 , 150, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 - 250, 525, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 + 250, 525, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 50, 350, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 100, 375, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 150, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 200, 425, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 250, 450, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 300, 475, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 350, 500, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 350, 500, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 300, 475, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 250, 450, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 200, 425, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 150, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 100, 375, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 50, 350, 25, true));
+  }
+  else if(levelNum ==3){
+    balls.push(new Balls(canvas.getCtx(), 50, 500, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 100, 475, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 150, 450, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 200, 425, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 250, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 300, 375, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 350, 350, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 400, 500, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 450, 475, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 500, 450, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 550, 425, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 600, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 650, 375, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 700, 350, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 350, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 300, 475, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 250, 450, 25, true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 200, 425, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 150, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 100, 375, 25, false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 50, 350, 25, true));
+  }
+  else{
+    balls.push(new Balls(canvas.getCtx(), 50, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 150,400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 250, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 350, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 450, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 550, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 650, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 750, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 850, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 950, 400, 25, false));
+    balls.push(new Balls(canvas.getCtx(), 50, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 150, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 250, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 350, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 450, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 550, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 650, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 750, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 850, 500, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 950, 500, 25, true));
+
+    balls.push(new Balls(canvas.getCtx(), 100, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 200, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 300, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 400, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 500, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 600, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 700, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 800, 550, 25, true));
+    balls.push(new Balls(canvas.getCtx(), 900, 550, 25, true));
+
+  }
+
 
 
 }
@@ -203,7 +304,7 @@ function loadLevel(levelNum) {
 
 
 function handleNameInput() {
-numberOfBalls = 3;
+  numberOfBalls = 3;
   nameInputField.style.display = "block";
   //update the onscreen text 
   nameInputField.oninput = function () {
@@ -217,11 +318,10 @@ numberOfBalls = 3;
   if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 400 && yAtClick <= 450) {
     //make sure we update the data on the server
     firebase.writeScoreNameData(userName, score, utils.getRandomString(10));
+    //make sure we also turn off the text box
+    nameInputField.style.display = "none";  
     //from there we grab our ordered map
     map = firebase.returnMapGlobal();
-    //make sure we also turn off the text box
-    nameInputField.style.display = "none";
-    //process our map
     highScoreScreen();
     //draw out the top 10 scores
     gameState = GameState.GAMEOVER;
@@ -244,7 +344,7 @@ function drawHUD() {
       // draw score
       canvas.getCtx().save();
       utils.fillText(canvas.getCtx(), `Current Level:${currentLevel}`, canvasElement.width - 975, 25);
-      utils.fillText(canvas.getCtx(), `Score:${score}`, canvasElement.width - 975, 125);
+      utils.fillText(canvas.getCtx(), `Score:${score}`, canvasElement.width - 975, 50);
       utils.fillText(canvas.getCtx(), `Total Balls Remaining:${numberOfBalls}`, canvasElement.width - 270, 25);
       canvas.getCtx().restore();
       break;
@@ -288,10 +388,6 @@ function drawHUD() {
 
   }
 }
-function setupUI(canvasElement) {
-
-} // end setupUI
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //this function will be accessed by our bullet class to allow it to decrease the number of balls we have
@@ -334,7 +430,13 @@ function getMousePosition(canvas, event) {
   return newArray;
 }
 function doMouseDown(array) {
+  //if bullet is centered have it mnake the shoot sound
+  if (bullet.getX() == startX && bullet.getY() == startY && gameState == GameState.MAIN) {
+
+    shootSound.play();
+  }
   //when the mouse is clicked save the x and y into our global variables that can be accessed in our loop
+
   xAtClick = array[0];
   yAtClick = array[1];
   switch (decider) {
@@ -363,17 +465,18 @@ function handleInputOnInstructionsScreen() {
     gameState = GameState.START;
   }
 }
-function handleInputOnHighScoreScreen(){
+function handleInputOnHighScoreScreen() {
   if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 700 && yAtClick <= 750) {
     //window.location.pathname = './about.html';
     window.location.reload();
-   gameState = GameState.START;
+    gameState = GameState.START;
   }
 }
 function highScoreScreen() {
-  
+
 
   for (let i = 0; i < 10; i++) {
+    
     if (map[i] == undefined) {
       return;
     }
@@ -401,56 +504,56 @@ function createWalls() {
   let x = 75;
   let y = 800;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
   y = 800
   x = 225;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
   y = 800
   x = 300;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
   y = 800
   x = 450;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
   y = 800
   x = 550;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
   y = 800
   x = 700;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
   y = 800
   x = 775;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
   y = 800
   x = 925;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2, false));
     y -= 4;
   }
 }
 function retrieveInstructions() {
 
   //fetch this jimmy jawn
-  fetch("../data/instructions-data.json")
+  fetch("./data/instructions-data.json")
     .then(response => {
       //if response is successful, return the JSON
       if (response.ok) {
