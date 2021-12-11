@@ -42,7 +42,7 @@ let topTenScores;
 
 function init() {
   //create our bullet at the center
-  score = 21300;
+  score = 0;
   //setting this to fault at the start so the bullet isnt moving arround
   decider = false;
   balls = [];
@@ -52,7 +52,7 @@ function init() {
   canvasElement = document.querySelector("canvas"); // hookup <canvas> element
   nameInputField = document.querySelector("#nameField");
   nameInputField.style.display = "none"
-  gameState = GameState.MAIN;
+  gameState = GameState.START;
   numberOfBalls = 3;
   currentLevel = 0;
   startX = 475;
@@ -61,7 +61,7 @@ function init() {
   bullet = new Bullet(canvas.getCtx(), 475, 25, 1, 25, bulletImg);
   instructions = [];
   savedState = false;
-  userName = "NoNameDingus";
+  userName = utils.getRandomString(12);
   map = new Map();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,10 +130,11 @@ function loop(timestamp) {
       //collision detection
       for (let i = 0; i < balls.length; i++) {
         //if it is colliding with one we exit the loop so that the collision detection doesnt only work with the last ball
-        if (bullet.checkColliding(getBall(i).getX(), getBall(i).getY(), getBall(i).getRadius())) {
+        if (bullet.checkColliding(getBall(i).getX(), getBall(i).getY(), getBall(i).getRadius(),getBall(i).getHasBounce())) {
           //remove the ball it collided with
           canvas.draw();
           drawHUD();
+          score+=10;
           balls.splice(i, 1);
           return;
         }
@@ -148,7 +149,7 @@ function loop(timestamp) {
 
   else if (gameState == GameState.START) {
     //draw background
-    canvas.drawScreen();
+    canvas.drawHomeScreen();
     //input handler
     handleInputOnStartScreen();
     //draw the hud every frame
@@ -157,19 +158,20 @@ function loop(timestamp) {
   }
   else if (gameState == GameState.INSTRUCTIONS) {
     //draw background
-    canvas.drawScreen();
+    canvas.drawHomeScreen();
     //input handler
     handleInputOnInstructionsScreen();
 
   }
   else if (gameState == GameState.GAMEOVERPRIOR) {
 
-    canvas.drawScreen();
+    canvas.drawHomeScreen();
     handleNameInput();
   }
   else if (gameState == GameState.GAMEOVER) {
-    canvas.drawScreen();
-    highScoreScreen();
+    canvas.drawHomeScreen();
+    handleInputOnHighScoreScreen();
+    
   }
   drawHUD();
 }
@@ -177,21 +179,21 @@ function loop(timestamp) {
 //this is where ball creation will be handeled
 function loadLevel(levelNum) {
   if (levelNum == 1) {
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 - 250, 300));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 + 250, 300));
-    balls.push(new Balls(canvas.getCtx(), 50, 400));
-    balls.push(new Balls(canvas.getCtx(), 125, 475));
-    balls.push(new Balls(canvas.getCtx(), 200, 550));
-    balls.push(new Balls(canvas.getCtx(), 275, 625));
-    balls.push(new Balls(canvas.getCtx(), 350, 650));
-    balls.push(new Balls(canvas.getCtx(), 425, 650));
-    balls.push(new Balls(canvas.getCtx(), 500, 650));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 425, 650));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 350, 650));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 275, 625));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 200, 550));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 125, 475));
-    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 50, 400));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 - 250, 300,25,true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width / 2 + 250, 300,25,true));
+    balls.push(new Balls(canvas.getCtx(), 50, 400,25,false));
+    balls.push(new Balls(canvas.getCtx(), 125, 475,25,true));
+    balls.push(new Balls(canvas.getCtx(), 200, 550,25,false));
+    balls.push(new Balls(canvas.getCtx(), 275, 625,25,false));
+    balls.push(new Balls(canvas.getCtx(), 350, 650,25,false));
+    balls.push(new Balls(canvas.getCtx(), 425, 650,25,false));
+    balls.push(new Balls(canvas.getCtx(), 500, 650,25,false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 425, 650,25,false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 350, 650,25,true));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 275, 625,25,false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 200, 550,25,false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 125, 475,25,false));
+    balls.push(new Balls(canvas.getCtx(), canvasElement.width - 50, 400,25,true));
   }
 
 
@@ -220,6 +222,7 @@ numberOfBalls = 3;
     //make sure we also turn off the text box
     nameInputField.style.display = "none";
     //process our map
+    highScoreScreen();
     //draw out the top 10 scores
     gameState = GameState.GAMEOVER;
   }
@@ -247,10 +250,10 @@ function drawHUD() {
       break;
     case GameState.INSTRUCTIONS:
       canvas.getCtx().save();
-      utils.drawButton(canvas.getCtx(), 150, 350, 250, 50, "Return to Start Screen");
-      utils.fillText(canvas.getCtx(), instructions[0], 50, 150, "18pt 'Oswald', cursive");
-      utils.fillText(canvas.getCtx(), instructions[1], 50, 200, "18pt 'Oswald', cursive");
-      utils.fillText(canvas.getCtx(), instructions[2], 50, 250, "18pt 'Oswald', cursive");
+      utils.drawButton(canvas.getCtx(), 150, 200, 250, 50, "Return to Start Screen");
+      utils.fillText(canvas.getCtx(), instructions[0], 50, 50, "18pt 'Oswald', cursive");
+      utils.fillText(canvas.getCtx(), instructions[1], 50, 100, "18pt 'Oswald', cursive");
+      utils.fillText(canvas.getCtx(), instructions[2], 50, 150, "18pt 'Oswald', cursive");
       canvas.getCtx().restore();
       break;
     case GameState.GAMEOVERPRIOR:
@@ -356,28 +359,33 @@ function handleInputOnStartScreen() {
   }
 }
 function handleInputOnInstructionsScreen() {
-  if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 350 && yAtClick <= 400) {
+  if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 200 && yAtClick <= 250) {
     gameState = GameState.START;
   }
 }
-
-function highScoreScreen() {
+function handleInputOnHighScoreScreen(){
   if (xAtClick >= 150 && xAtClick <= 400 && yAtClick >= 700 && yAtClick <= 750) {
-    window.location.pathname = './about.html';
-   // gameState = GameState.START;
+    //window.location.pathname = './about.html';
+    window.location.reload();
+   gameState = GameState.START;
   }
+}
+function highScoreScreen() {
+  
 
   for (let i = 0; i < 10; i++) {
     if (map[i] == undefined) {
       return;
     }
     //get the two values we want
-    let score = map[i][0];
-    let name = map[i][1];
+    let name = map[i][0];
+    let score = map[i][1];
 
     //split this back down into its two arrays
     topTenNames.push(name);
     topTenScores.push(score);
+    //console.log(topTenNames);
+    //console.log(topTenScores);
 
   }
 
@@ -393,49 +401,49 @@ function createWalls() {
   let x = 75;
   let y = 800;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
   y = 800
   x = 225;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
   y = 800
   x = 300;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
   y = 800
   x = 450;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
   y = 800
   x = 550;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
   y = 800
   x = 700;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
   y = 800
   x = 775;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
   y = 800
   x = 925;
   for (let i = 0; i < 25; i++) {
-    walls.push(new Balls(canvas.getCtx(), x, y, 2));
+    walls.push(new Balls(canvas.getCtx(), x, y, 2,false));
     y -= 4;
   }
 }

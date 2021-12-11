@@ -13,10 +13,17 @@ body {
 	background: #bcb382;
 }
 h1,h2,h3,li{
+  font-family: Oswald;
   color:#09814a;
 }
 img{
   display: none;
+}
+#homeImage{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
 }
 input{
   display: none;

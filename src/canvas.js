@@ -22,9 +22,20 @@ function getCtx()
 {
     return ctx;
 }
+function drawHomeScreen(){
+    ctx.save();
+    ctx.fillStyle = "olive";
+    ctx.globalAlpha = .5;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    ctx.restore();
+    ctx.save();
+    ctx.drawImage(backgroundImage,0,0);
+    ctx.restore();
+    
+}
 function drawScreen(){
     ctx.save();
-    ctx.fillStyle = "lightblue";
+    ctx.fillStyle = "olive";
     ctx.globalAlpha = .5;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.restore();
@@ -62,7 +73,7 @@ function draw(params = {}) {
     
     //DRAW THE PLInko cups and black bars
     ctx.save();
-    utils.drawRectangle(ctx,0,canvasHeight-30,canvasWidth,100,"lightblue");
+    //utils.drawRectangle(ctx,0,canvasHeight-30,canvasWidth,100,"lightblue");
     ctx.drawImage(imageOfBucket,55,650,155,150);
     ctx.drawImage(imageOfBucket,280,650,155,150);
     ctx.drawImage(imageOfBucket,530,650,155,150);
@@ -74,4 +85,4 @@ function draw(params = {}) {
 }
 
 
-export { setupCanvas, draw, getCtx,drawScreen };
+export { setupCanvas, draw, getCtx,drawScreen,drawHomeScreen };
