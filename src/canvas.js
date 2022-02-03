@@ -75,7 +75,7 @@ function draw(params = {}) {
     ctx.save();
     //utils.drawRectangle(ctx,0,canvasHeight-30,canvasWidth,100,"lightblue");
     ctx.drawImage(imageOfBucket,55,650,155,150);
-    ctx.drawImage(imageOfBucket,280,650,155,150);
+   ctx.drawImage(imageOfBucket,280,650,155,150);
     ctx.drawImage(imageOfBucket,530,650,155,150);
     ctx.drawImage(imageOfBucket,755,650,155,150);
     ctx.restore();
