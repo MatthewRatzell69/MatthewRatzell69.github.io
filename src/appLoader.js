@@ -6,7 +6,7 @@ import "./sw-documentationGuy.js";
 let bool = true;
 
 window.onload = () => {
-/*
+
 	if(bool){
 		if (location.href.match('www.horseplinko.com')) 
 		{
@@ -16,7 +16,7 @@ window.onload = () => {
 		}
 		bool = false;
 	}
-	*/
+	
 	
 	console.log("window.onload called");
 	if (window.location.href.match('index.html')) 
