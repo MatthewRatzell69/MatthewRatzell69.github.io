@@ -7,7 +7,7 @@ import "./sw-documentationGuy.js";
 window.onload = () => {
 
 	//method to reload on first load
-	if(!window.location.hash) {
+	if(!window.location.hash && window.location.href.match('www.horseplinko.com')) {
         //setting window location
         window.location = window.location + +'index.html'+'#loaded';
         //using reload() method to reload web page
