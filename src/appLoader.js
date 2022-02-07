@@ -3,16 +3,20 @@ import "./sw-nav.js";
 import "./sw-footer.js";
 import "./sw-documentationGuy.js";
 
-
+let bool = true;
 
 window.onload = () => {
-	//if on horseplinko .com go to index
-	if (location.href.match('www.horseplinko.com')) 
-	{
-		location.href = '/index.html'
-		console.log('loading from web');
-
+/*
+	if(bool){
+		if (location.href.match('www.horseplinko.com')) 
+		{
+			location.href = '/index.html'
+			console.log('loading from web');
+	
+		}
+		bool = false;
 	}
+	*/
 	
 	console.log("window.onload called");
 	if (window.location.href.match('index.html')) 
