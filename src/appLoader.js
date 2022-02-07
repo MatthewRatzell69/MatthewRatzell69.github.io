@@ -9,7 +9,7 @@ window.onload = () => {
 	//if on horseplinko .com go to index
 	if (location.href.match('www.horseplinko.com')) 
 	{
-		location.href = 'www.horseplinko.com/index.html'
+		location.href = '/index.html'
 		console.log('loading from web');
 
 	}
