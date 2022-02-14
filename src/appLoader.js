@@ -3,7 +3,7 @@ import "./sw-nav.js";
 import "./sw-footer.js";
 import "./sw-documentationGuy.js";
 
-let bool = true;
+
 window.onload = () => {
 
 	/*
