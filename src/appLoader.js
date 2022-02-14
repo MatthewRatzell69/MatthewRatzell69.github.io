@@ -10,7 +10,7 @@ window.onload = () => {
 	if (!window.location.href.match('index.html')) 
 	{
 		console.log("going to index");
-		window.location = window.location + 'index.html/'
+		window.location = window.location + 'index.html'
 	}
 
 	//if it does match load it
